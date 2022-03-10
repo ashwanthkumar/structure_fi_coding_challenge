@@ -19,7 +19,8 @@ type Store struct {
 
 func NewStore() Store {
 	return Store{
-		internal: make(map[string]Stat),
+		tdigestMap: make(map[string]tdigest.TDigest),
+		internal:   make(map[string]Stat),
 	}
 }
 

@@ -7,11 +7,13 @@ import (
 	"strings"
 
 	"github.com/ashwanthkumar/structure_fi_coding_challenge/binance"
+	"github.com/ashwanthkumar/structure_fi_coding_challenge/store"
 )
 
 func main() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
+	table := store.NewStore()
 
 	allSymbols, err := binance.GetAllSymbols()
 	if err != nil {
@@ -29,7 +31,8 @@ func main() {
 		select {
 		case msg, ok := <-streamsManager.MessageBroadcast:
 			if ok {
-				log.Printf("Message: %s\n", string(msg))
+				// log.Printf("Message: %s\n", string(msg))
+				table.Add(msg.Symbol, msg.Price)
 			}
 			// messages that we get
 		case err, ok := <-streamsManager.ErrorBroadcast:

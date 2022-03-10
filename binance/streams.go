@@ -3,9 +3,11 @@ package binance
 import (
 	"bytes"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/valyala/fastjson"
 )
 
 type StreamsManager struct {
@@ -13,12 +15,17 @@ type StreamsManager struct {
 	Connections []*websocket.Conn
 	// A common consumer Channel where all the websocket connections messages are relayed,
 	// this way we can consume the messages across all the connections in a single place
-	MessageBroadcast chan ([]byte)
+	MessageBroadcast chan (StreamMessage)
 	// A common consumer Channel where all the errors from the server are relayed
 	ErrorBroadcast chan (error)
 
 	// internal state to send pong frames across all connections that we maintain
 	keepAliveTimer *time.Ticker
+}
+
+type StreamMessage struct {
+	Symbol string
+	Price  float64
 }
 
 var (
@@ -30,7 +37,7 @@ var (
 
 func NewStreamsManager() StreamsManager {
 	return StreamsManager{
-		MessageBroadcast: make(chan []byte),
+		MessageBroadcast: make(chan StreamMessage),
 		ErrorBroadcast:   make(chan error),
 	}
 }
@@ -63,7 +70,12 @@ func (SM StreamsManager) Open(streamsInLowerCase []string) error {
 					break
 				}
 				message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-				SM.MessageBroadcast <- message
+				streamMessage, err := parseMessageFromTradeStream(string(message))
+				if err != nil {
+					SM.ErrorBroadcast <- err
+				} else {
+					SM.MessageBroadcast <- *streamMessage
+				}
 			}
 		}()
 	}
@@ -92,4 +104,25 @@ func (SM StreamsManager) Close() {
 	if SM.keepAliveTimer != nil {
 		SM.keepAliveTimer.Stop()
 	}
+}
+
+func parseMessageFromTradeStream(message string) (*StreamMessage, error) {
+	var p fastjson.Parser
+	v, err := p.Parse(message)
+	if err != nil {
+		return nil, err
+	}
+
+	price, err := strconv.ParseFloat(string(v.GetStringBytes("data", "p")), 64)
+	if err != nil {
+		return nil, err
+	}
+
+	symbol := string(v.GetStringBytes("data", "s"))
+
+	streamMessage := &StreamMessage{
+		Symbol: symbol,
+		Price:  price,
+	}
+	return streamMessage, nil
 }
