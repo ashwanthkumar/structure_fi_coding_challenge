@@ -19,3 +19,9 @@ func TestGetAllSymbols(t *testing.T) {
 	assert.Contains(t, allSymbols, "WTCETH")
 	assert.Contains(t, allSymbols, "BURGERBUSD")
 }
+
+func TestGetAllSymbolsWithInvalidInputShouldFail(t *testing.T) {
+	dataAsJsonString := "invalid json input"
+	_, err := parseSymbolsResponse(dataAsJsonString)
+	assert.Error(t, err)
+}
