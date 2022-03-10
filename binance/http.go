@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func Get(url string) (string, error) {
+func http_Get(url string) (string, error) {
 	httpClient := http.Client{}
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)

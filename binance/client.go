@@ -1,13 +1,18 @@
 package binance
 
 import (
+	"log"
+	"net/url"
+	"strings"
+
+	"github.com/gorilla/websocket"
 	"github.com/valyala/fastjson"
 )
 
 func GetAllSymbols() ([]string, error) {
 	url := "https://api.binance.com/api/v3/exchangeInfo"
 
-	responseJsonAsString, err := Get(url)
+	responseJsonAsString, err := http_Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -30,4 +35,18 @@ func parseSymbolsResponse(responseJsonAsString string) ([]string, error) {
 	}
 
 	return allSymbols, nil
+}
+
+func OpenStream(streams []string) (*websocket.Conn, error) {
+	addr := "stream.binance.com:9443"
+	path := "/stream"
+	u := url.URL{Scheme: "wss", Host: addr, Path: path}
+	if len(streams) > 0 {
+		query := "streams=" + strings.Join(streams, "/")
+		u.RawQuery = query
+	}
+
+	log.Printf("connecting to %s", u.String())
+	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	return c, err
 }
