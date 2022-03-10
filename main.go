@@ -16,6 +16,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var AppVersion = "0.0.1-dev"
+var BuildTimestamp = time.Now().Format(time.RFC3339)
+
 func main() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
@@ -40,6 +43,12 @@ func main() {
 	})
 	router.GET("/symbols", func(c *gin.Context) {
 		c.JSON(http.StatusOK, allSymbols)
+	})
+	router.GET("/version", func(c *gin.Context) {
+		response := make(map[string]interface{})
+		response["version"] = AppVersion
+		response["timestamp"] = BuildTimestamp
+		c.JSON(http.StatusOK, response)
 	})
 
 	srv := &http.Server{
