@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseTickerForSpot(t *testing.T) {
+func TestGetAllSymbols(t *testing.T) {
 	data, err := os.ReadFile("./symbols_response.json")
 	assert.NoError(t, err)
 
