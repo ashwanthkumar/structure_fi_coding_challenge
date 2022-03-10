@@ -27,7 +27,7 @@ func NewStore() Store {
 func (s Store) Add(symbol string, price float64) {
 	td, present := s.tdigestMap[symbol]
 	if !present {
-		td = *tdigest.New()
+		td = *tdigest.NewWithCompression(500)
 	}
 	td.Add(price, 1)
 	s.tdigestMap[symbol] = td
