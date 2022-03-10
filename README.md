@@ -24,7 +24,7 @@ That is to say, there can be no collisions across the complete set of symbols su
 You shall make these statistics that you are maintaining accessible via a simple REST API. This API should be public, and doesn't need any form of authentication.
 
 - GET /symbols shall return a json list of all the symbols supported by your API. This should be the same list of symbols as is supported at binance.com.
-- GET /<symbol> shall return a json with i) the symbol, ii) the number of data that have been seen for that symbol so far, iii) the infinite median of that symbol's prices, and iv) the most recent price seen for that symbol.
+- GET /&lt;symbol&gt; shall return a json with i) the symbol, ii) the number of data that have been seen for that symbol so far, iii) the infinite median of that symbol's prices, and iv) the most recent price seen for that symbol.
 
 The program should be runnable from the command line, and can be stopped with Ctrl-C.
 
