@@ -1,7 +1,6 @@
 package binance
 
 import (
-	"log"
 	"net/url"
 	"strings"
 
@@ -46,7 +45,7 @@ func OpenStream(streams []string) (*websocket.Conn, error) {
 		u.RawQuery = query
 	}
 
-	log.Printf("connecting to %s", u.String())
+	// log.Printf("connecting to %s", u.String())
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	return c, err
 }
