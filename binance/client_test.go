@@ -12,7 +12,7 @@ func TestGetAllSymbols(t *testing.T) {
 	assert.NoError(t, err)
 
 	dataAsJsonString := string(data)
-	allSymbols, err := parseSymbolsResponse(dataAsJsonString)
+	allSymbols, err := ParseSymbolsResponse(dataAsJsonString)
 	assert.NoError(t, err)
 
 	assert.Equal(t, 1961, len(allSymbols))
@@ -22,6 +22,6 @@ func TestGetAllSymbols(t *testing.T) {
 
 func TestGetAllSymbolsWithInvalidInputShouldFail(t *testing.T) {
 	dataAsJsonString := "invalid json input"
-	_, err := parseSymbolsResponse(dataAsJsonString)
+	_, err := ParseSymbolsResponse(dataAsJsonString)
 	assert.Error(t, err)
 }

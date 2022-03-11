@@ -16,10 +16,10 @@ func GetAllSymbols() ([]string, error) {
 		return nil, err
 	}
 
-	return parseSymbolsResponse(responseJsonAsString)
+	return ParseSymbolsResponse(responseJsonAsString)
 }
 
-func parseSymbolsResponse(responseJsonAsString string) ([]string, error) {
+func ParseSymbolsResponse(responseJsonAsString string) ([]string, error) {
 	var p fastjson.Parser
 	v, err := p.Parse(responseJsonAsString)
 	if err != nil {
