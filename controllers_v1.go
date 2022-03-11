@@ -16,7 +16,7 @@ type SymbolsResponse struct {
 // @Summary  Return all symbols and the active symbols for which we have data in our datastore
 // @Schemes
 // @Description  Return all symbols and the active symbols for which we have data in our datastore
-// @Tags         symbols
+// @Tags         Solution
 // @Produce      json
 // @Success      200  {object}  main.SymbolsResponse
 // @Router       /symbols [get]
@@ -34,7 +34,7 @@ func ReturnAllSymbols(allSymbols []string, datastore store.Store) func(c *gin.Co
 // @Summary      Return symbol specific info
 // @Param        symbol  path  string  true  "Ticker Symbol"
 // @Description  Return symbol specific info
-// @Tags         symbols
+// @Tags         Solution
 // @Produce      json
 // @Success      200  {object}  store.Stat
 // @Router       /{symbol} [get]

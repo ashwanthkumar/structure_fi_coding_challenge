@@ -1,6 +1,6 @@
 APPNAME = structure_fi_coding_challenge
 VERSION=`git log -n1 --format="%h"`
-BUILD_TIMESTAMP=`date --rfc-3339=seconds`
+BUILD_TIMESTAMP=`date --rfc-2822`
 TESTFLAGS=-v -cover -covermode=atomic -bench=.
 TEST_COVERAGE_THRESHOLD=15.0
 
@@ -8,16 +8,6 @@ all: setup build
 
 build:
 	go build -tags netgo -ldflags "-w -s -X 'main.AppVersion=${VERSION}' -X 'main.BuildTimestamp=${BUILD_TIMESTAMP}'" -o ${APPNAME} .
-
-build-linux:
-	GOOS=linux GOARCH=amd64 go build -tags netgo -ldflags "-w -s -X 'main.AppVersion=${VERSION}' -X 'main.BuildTimestamp=${BUILD_TIMESTAMP}'" -o ${APPNAME}-linux-amd64 .
-	shasum -a256 ${APPNAME}-linux-amd64
-
-build-mac:
-	GOOS=darwin GOARCH=amd64 go build -tags netgo -ldflags "-w -s -X 'main.AppVersion=${VERSION}' -X 'main.BuildTimestamp=${BUILD_TIMESTAMP}'" -o ${APPNAME}-darwin-amd64
-	shasum -a256 ${APPNAME}-darwin-amd64
-
-build-all: build-mac build-linux
 
 setup:
 	go mod download
