@@ -9,51 +9,36 @@ type Stat struct {
 	Occurrence uint64  `json:"occurrence"`
 	Median     float64 `json:"median"`
 	Ltp        float64 `json:"ltp"`
+
+	td tdigest.TDigest `json:"-"`
 }
 
 type Store struct {
-	// TODO: Replace the default map with a custom map later on
-	tdigestMap map[string]tdigest.TDigest
-	internal   map[string]Stat
+	dictionary *MapWithPHF
 }
 
-func NewStore() Store {
+func NewStore(allSymbols []string) Store {
 	return Store{
-		tdigestMap: make(map[string]tdigest.TDigest),
-		internal:   make(map[string]Stat),
+		dictionary: NewMapWithPHF(allSymbols),
 	}
 }
 
 func (s Store) Add(symbol string, price float64) {
-	td, present := s.tdigestMap[symbol]
+	stat, present := s.dictionary.Get(symbol)
 	if !present {
-		td = *tdigest.NewWithCompression(500)
-	}
-	td.Add(price, 1)
-	s.tdigestMap[symbol] = td
-
-	stat, present := s.internal[symbol]
-	if !present {
-		stat = Stat{
+		stat = &Stat{
 			Symbol: symbol,
+			td:     *tdigest.NewWithCompression(500),
 		}
 	}
+	stat.td.Add(price, 1)
 	stat.Occurrence = stat.Occurrence + 1
-	stat.Median = td.Quantile(0.5)
+	stat.Median = stat.td.Quantile(0.5)
 	stat.Ltp = price
-	s.internal[symbol] = stat
+	s.dictionary.Set(symbol, stat)
 }
 
-func (s Store) Get(symbol string) (Stat, bool) {
-	stat, present := s.internal[symbol]
+func (s Store) Get(symbol string) (*Stat, bool) {
+	stat, present := s.dictionary.Get(symbol)
 	return stat, present
-}
-
-func (s Store) Symbols() []string {
-	symbols := make([]string, 0, len(s.internal))
-	for k := range s.internal {
-		symbols = append(symbols, k)
-	}
-
-	return symbols
 }

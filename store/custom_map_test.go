@@ -18,7 +18,7 @@ func TestNoCollisionAgainstAllSymbolsDataset(t *testing.T) {
 
 	customMap := NewMapWithPHF(allSymbols)
 	for _, symbol := range allSymbols {
-		customMap.Set(symbol, Stat{Symbol: symbol})
+		customMap.Set(symbol, &Stat{Symbol: symbol})
 	}
 
 	// now that we've set all some value to all the keys, we should never have an empty slot in out Values
@@ -33,7 +33,7 @@ func TestMapGetSetIsWorkingForValidInputs(t *testing.T) {
 	keys := []string{"A", "B", "C"}
 	customMap := NewMapWithPHF(keys)
 	for _, k := range keys {
-		customMap.Set(k, Stat{Symbol: k})
+		customMap.Set(k, &Stat{Symbol: k})
 	}
 
 	for _, k := range keys {

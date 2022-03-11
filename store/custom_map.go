@@ -28,10 +28,10 @@ func NewMapWithPHF(keys []string) *MapWithPHF {
 // Idea behind using go-mph is to identify a location that is unique and mod that value to the total length that we have
 // so we can map that to our finite array than always maintain an array of length int32. Since the MPH is built specifically
 // for the known set of keys, we should not have any collisions.
-func (m *MapWithPHF) Set(key string, value Stat) {
+func (m *MapWithPHF) Set(key string, value *Stat) {
 	index := m.hashFunction.Query(key)
 	location := index % int32(m.Length)
-	m.Values[location] = &value
+	m.Values[location] = value
 }
 
 func (m *MapWithPHF) Get(key string) (*Stat, bool) {

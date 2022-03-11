@@ -22,13 +22,14 @@ var BuildTimestamp = time.Now().Format(time.RFC3339)
 func main() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
-	datastore := store.NewStore()
 	streamsManager := binance.NewStreamsManager()
 
 	allSymbols, err := binance.GetAllSymbols()
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
+
+	datastore := store.NewStore(allSymbols)
 	go startConsumingPriceStream(allSymbols, streamsManager, datastore)
 
 	router := gin.Default()
