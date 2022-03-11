@@ -21,6 +21,14 @@ This should start the application on port `8080` as default and we should be con
 
 Once the service starts, you can visit [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html) for a swagger interface to test out the API implementation.
 
+I've also exposed an interface of `pprof` so we can visualize the profiling of the application while it is running. Once the server is started on `8080`, you can use the following tool to view the profile information on the browser:
+
+```
+$ go tool pprof -http=:8081 http://localhost:8080/debug/pprof/heap
+```
+
+This should automatically open the browser to see the profile information.
+
 ## Solution Notes
 > First of all, thank you for the problem statement I had so much fun learning about t-digest and Perfect Hash Functions along the way.
 
