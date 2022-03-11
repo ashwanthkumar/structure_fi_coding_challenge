@@ -56,8 +56,6 @@ func (SM StreamsManager) Open(streamsInLowerCase []string) error {
 		}
 		streams := streamsInLowerCase[i*limit : maxLimit]
 		ws := OpenStream(streams)
-		ws.SetReadDeadline(time.Now().Add(pongWait))
-		ws.SetPongHandler(func(string) error { ws.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 		SM.Connections = append(SM.Connections, ws)
 
 		go func() {
@@ -83,13 +81,13 @@ func (SM StreamsManager) Open(streamsInLowerCase []string) error {
 	}
 
 	// background task to send pong frames every 5 minutes to all the connections that we maintain
-	SM.keepAliveTimer = time.NewTicker(5 * time.Minute)
+	SM.keepAliveTimer = time.NewTicker(30 * time.Second)
 	go func() {
 		for {
 			<-SM.keepAliveTimer.C
 
 			for _, connection := range SM.Connections {
-				err := connection.WriteMessage(websocket.TextMessage, []byte(""))
+				err := connection.WriteMessage(websocket.PongMessage, []byte(""))
 				if err != nil {
 					log.Print("ERROR: write:", err)
 					SM.ErrorBroadcast <- err

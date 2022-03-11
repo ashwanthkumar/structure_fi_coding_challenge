@@ -11,6 +11,9 @@ import (
 	"syscall"
 	"time"
 
+	// Ref - https://go.dev/blog/pprof
+	"github.com/gin-contrib/pprof"
+
 	"github.com/ashwanthkumar/structure_fi_coding_challenge/binance"
 	docs "github.com/ashwanthkumar/structure_fi_coding_challenge/docs"
 	"github.com/ashwanthkumar/structure_fi_coding_challenge/store"
@@ -41,6 +44,7 @@ func main() {
 
 	router := gin.Default()
 	router.Use(gin.Logger())
+	pprof.Register(router)
 
 	docs.SwaggerInfo.Version = AppVersion
 	docs.SwaggerInfo.Host = "localhost:8080" // TODO(ashwanthkumar): need to make this so it works on non-local deployments too
