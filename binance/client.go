@@ -1,11 +1,10 @@
 package binance
 
 import (
-	"log"
 	"net/url"
 	"strings"
 
-	"github.com/gorilla/websocket"
+	"github.com/recws-org/recws"
 	"github.com/valyala/fastjson"
 )
 
@@ -37,7 +36,7 @@ func ParseSymbolsResponse(responseJsonAsString string) ([]string, error) {
 	return allSymbols, nil
 }
 
-func OpenStream(streams []string) (*websocket.Conn, error) {
+func OpenStream(streams []string) recws.RecConn {
 	addr := "stream.binance.com:9443"
 	path := "/stream"
 	u := url.URL{Scheme: "wss", Host: addr, Path: path}
@@ -47,11 +46,7 @@ func OpenStream(streams []string) (*websocket.Conn, error) {
 	}
 
 	// log.Printf("Opening websocket connection to %s", u.String())
-	c, resp, err := websocket.DefaultDialer.Dial(u.String(), nil)
-	if err == websocket.ErrBadHandshake {
-		body, _ := readRespBody(resp)
-		log.Printf("handshake failed with status %d, response: %s", resp.StatusCode, body)
-	}
-
-	return c, err
+	ws := recws.RecConn{}
+	ws.Dial(u.String(), nil)
+	return ws
 }

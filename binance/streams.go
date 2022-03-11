@@ -7,12 +7,13 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/recws-org/recws"
 	"github.com/valyala/fastjson"
 )
 
 type StreamsManager struct {
 	// List of all the underlying Websocket connections
-	Connections []*websocket.Conn
+	Connections []recws.RecConn
 	// A common consumer Channel where all the websocket connections messages are relayed,
 	// this way we can consume the messages across all the connections in a single place
 	MessageBroadcast chan (StreamMessage)
@@ -54,17 +55,14 @@ func (SM StreamsManager) Open(streamsInLowerCase []string) error {
 			maxLimit = len(streamsInLowerCase) - 1
 		}
 		streams := streamsInLowerCase[i*limit : maxLimit]
-		connection, err := OpenStream(streams)
-		if err != nil {
-			return err
-		}
-		connection.SetReadDeadline(time.Now().Add(pongWait))
-		connection.SetPongHandler(func(string) error { connection.SetReadDeadline(time.Now().Add(pongWait)); return nil })
-		SM.Connections = append(SM.Connections, connection)
+		ws := OpenStream(streams)
+		ws.SetReadDeadline(time.Now().Add(pongWait))
+		ws.SetPongHandler(func(string) error { ws.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+		SM.Connections = append(SM.Connections, ws)
 
 		go func() {
 			for {
-				_, message, err := connection.ReadMessage()
+				_, message, err := ws.ReadMessage()
 				if err != nil {
 					if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 						log.Printf("error: %v", err)
