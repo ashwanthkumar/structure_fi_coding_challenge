@@ -47,22 +47,9 @@ func main() {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	v1 := router.Group("/api/v1")
 	{
-		v1.GET("/:symbol", func(c *gin.Context) {
-			symbol := c.Param("symbol")
-			stat, present := datastore.Get(symbol)
-			if present {
-				c.JSON(http.StatusOK, stat)
-			} else {
-				c.JSON(http.StatusNotFound, []int{})
-			}
-		})
+		v1.GET("/:symbol", ReturnSymbolInfo(datastore))
 		v1.GET("/symbols", ReturnAllSymbols(allSymbols, datastore))
-		v1.GET("/version", func(c *gin.Context) {
-			response := make(map[string]interface{})
-			response["version"] = AppVersion
-			response["timestamp"] = BuildTimestamp
-			c.JSON(http.StatusOK, response)
-		})
+		v1.GET("/version", VersionInfo())
 	}
 
 	srv := &http.Server{
