@@ -2,9 +2,9 @@ APPNAME = structure_fi_coding_challenge
 VERSION=`git log -n1 --format="%h"`
 BUILD_TIMESTAMP=`date --rfc-2822`
 TESTFLAGS=-v -cover -covermode=atomic -bench=.
-TEST_COVERAGE_THRESHOLD=15.0
+TEST_COVERAGE_THRESHOLD=20.0
 
-all: setup build
+all: setup test-ci build
 
 build:
 	go build -tags netgo -ldflags "-w -s -X 'main.AppVersion=${VERSION}' -X 'main.BuildTimestamp=${BUILD_TIMESTAMP}'" -o ${APPNAME} .
