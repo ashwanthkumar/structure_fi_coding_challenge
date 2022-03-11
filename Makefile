@@ -4,6 +4,8 @@ BUILD_TIMESTAMP=`date --rfc-3339=seconds`
 TESTFLAGS=-v -cover -covermode=atomic -bench=.
 TEST_COVERAGE_THRESHOLD=15.0
 
+all: setup build
+
 build:
 	go build -tags netgo -ldflags "-w -s -X 'main.AppVersion=${VERSION}' -X 'main.BuildTimestamp=${BUILD_TIMESTAMP}'" -o ${APPNAME} .
 
@@ -17,13 +19,11 @@ build-mac:
 
 build-all: build-mac build-linux
 
-all: setup
-	build
-	install
-
 setup:
-	go get github.com/wadey/gocovmerge
 	go mod download
+	go install github.com/wadey/gocovmerge@latest
+	go install github.com/swaggo/swag/cmd/swag@latest
+	swag init -g api_doc.go
 
 test-only:
 	go test ${TESTFLAGS} github.com/ashwanthkumar/structure_fi_coding_challenge/${name}

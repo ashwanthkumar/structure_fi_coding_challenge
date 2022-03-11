@@ -12,8 +12,11 @@ import (
 	"time"
 
 	"github.com/ashwanthkumar/structure_fi_coding_challenge/binance"
+	docs "github.com/ashwanthkumar/structure_fi_coding_challenge/docs"
 	"github.com/ashwanthkumar/structure_fi_coding_challenge/store"
 	"github.com/gin-gonic/gin"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 var AppVersion = "0.0.1-dev"
@@ -38,27 +41,29 @@ func main() {
 
 	router := gin.Default()
 	router.Use(gin.Logger())
-	router.GET("/:symbol", func(c *gin.Context) {
-		symbol := c.Param("symbol")
-		stat, present := datastore.Get(symbol)
-		if present {
-			c.JSON(http.StatusOK, stat)
-		} else {
-			c.JSON(http.StatusNotFound, []int{})
-		}
-	})
-	router.GET("/symbols", func(c *gin.Context) {
-		response := make(map[string]interface{})
-		response["all"] = allSymbols
-		response["active"] = datastore.Symbols()
-		c.JSON(http.StatusOK, response)
-	})
-	router.GET("/version", func(c *gin.Context) {
-		response := make(map[string]interface{})
-		response["version"] = AppVersion
-		response["timestamp"] = BuildTimestamp
-		c.JSON(http.StatusOK, response)
-	})
+
+	docs.SwaggerInfo.Version = AppVersion
+	docs.SwaggerInfo.Host = "localhost:8080" // TODO(ashwanthkumar): need to make this so it works on non-local deployments too
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	v1 := router.Group("/api/v1")
+	{
+		v1.GET("/:symbol", func(c *gin.Context) {
+			symbol := c.Param("symbol")
+			stat, present := datastore.Get(symbol)
+			if present {
+				c.JSON(http.StatusOK, stat)
+			} else {
+				c.JSON(http.StatusNotFound, []int{})
+			}
+		})
+		v1.GET("/symbols", ReturnAllSymbols(allSymbols, datastore))
+		v1.GET("/version", func(c *gin.Context) {
+			response := make(map[string]interface{})
+			response["version"] = AppVersion
+			response["timestamp"] = BuildTimestamp
+			c.JSON(http.StatusOK, response)
+		})
+	}
 
 	srv := &http.Server{
 		Addr:    "0.0.0.0:8080",
