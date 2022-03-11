@@ -49,7 +49,11 @@ func (SM StreamsManager) Open(streamsInLowerCase []string) error {
 	limit := 1024
 	nrOfConnections := len(streamsInLowerCase) / limit
 	for i := 0; i <= nrOfConnections; i++ {
-		streams := streamsInLowerCase[i*limit : (i*limit)+limit]
+		maxLimit := (i * limit) + limit
+		if i == nrOfConnections {
+			maxLimit = len(streamsInLowerCase) - 1
+		}
+		streams := streamsInLowerCase[i*limit : maxLimit]
 		connection, err := OpenStream(streams)
 		if err != nil {
 			return err
@@ -97,6 +101,7 @@ func (SM StreamsManager) Open(streamsInLowerCase []string) error {
 		}
 	}()
 
+	log.Printf("Websocket streams are setup and we're consuming: %d trade streams across %d websocket connections", len(streamsInLowerCase), len(SM.Connections))
 	return nil
 }
 

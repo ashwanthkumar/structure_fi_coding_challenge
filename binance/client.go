@@ -1,6 +1,7 @@
 package binance
 
 import (
+	"log"
 	"net/url"
 	"strings"
 
@@ -45,7 +46,12 @@ func OpenStream(streams []string) (*websocket.Conn, error) {
 		u.RawQuery = query
 	}
 
-	// log.Printf("connecting to %s", u.String())
-	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	// log.Printf("Opening websocket connection to %s", u.String())
+	c, resp, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	if err == websocket.ErrBadHandshake {
+		body, _ := readRespBody(resp)
+		log.Printf("handshake failed with status %d, response: %s", resp.StatusCode, body)
+	}
+
 	return c, err
 }

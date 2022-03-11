@@ -32,7 +32,12 @@ func main() {
 	datastore := store.NewStore(allSymbols)
 	go startConsumingPriceStream(allSymbols, streamsManager, datastore)
 
+	if !strings.Contains(AppVersion, "-dev") {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	router := gin.Default()
+	router.Use(gin.Logger())
 	router.GET("/:symbol", func(c *gin.Context) {
 		symbol := c.Param("symbol")
 		stat, present := datastore.Get(symbol)
@@ -56,13 +61,14 @@ func main() {
 	})
 
 	srv := &http.Server{
-		Addr:    ":8080",
+		Addr:    "0.0.0.0:8080",
 		Handler: router,
 	}
 
 	// Initializing the server in a goroutine so that
 	// it won't block the graceful shutdown handling below
 	go func() {
+		log.Printf("Starting Server at: %s", srv.Addr)
 		if err := srv.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {
 			log.Printf("listen: %s\n", err)
 		}
@@ -93,12 +99,16 @@ func main() {
 }
 
 func startConsumingPriceStream(allSymbols []string, streamsManager binance.StreamsManager, datastore store.Store) {
+	log.Printf("Setting up trade stream connections")
 	symbolTradeStreams := make([]string, 0)
 	for _, symbol := range allSymbols {
 		symbolTradeStreams = append(symbolTradeStreams, strings.ToLower(symbol)+"@trade")
 	}
 
-	streamsManager.Open(symbolTradeStreams)
+	err := streamsManager.Open(symbolTradeStreams)
+	if err != nil {
+		log.Fatalf("[ERROR] %v", err)
+	}
 	for {
 		select {
 		case msg, ok := <-streamsManager.MessageBroadcast:

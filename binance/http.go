@@ -15,16 +15,20 @@ func http_Get(url string) (string, error) {
 
 	res, getErr := httpClient.Do(req)
 	if getErr != nil {
-		return "", err
+		return "", getErr
 	}
 
+	return readRespBody(res)
+}
+
+func readRespBody(res *http.Response) (string, error) {
 	if res.Body != nil {
 		defer res.Body.Close()
 	}
 
 	body, readErr := ioutil.ReadAll(res.Body)
 	if readErr != nil {
-		return "", err
+		return "", readErr
 	}
 
 	return string(body), nil
