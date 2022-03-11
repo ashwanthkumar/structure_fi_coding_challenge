@@ -43,7 +43,10 @@ func main() {
 		}
 	})
 	router.GET("/symbols", func(c *gin.Context) {
-		c.JSON(http.StatusOK, allSymbols)
+		response := make(map[string]interface{})
+		response["all"] = allSymbols
+		response["active"] = datastore.Symbols()
+		c.JSON(http.StatusOK, response)
 	})
 	router.GET("/version", func(c *gin.Context) {
 		response := make(map[string]interface{})

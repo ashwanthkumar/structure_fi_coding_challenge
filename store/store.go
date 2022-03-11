@@ -42,3 +42,14 @@ func (s Store) Get(symbol string) (*Stat, bool) {
 	stat, present := s.dictionary.Get(symbol)
 	return stat, present
 }
+
+func (s Store) Symbols() []string {
+	symbols := make([]string, 0)
+	for _, stat := range s.dictionary.Values {
+		if stat != nil {
+			symbols = append(symbols, stat.Symbol)
+		}
+	}
+
+	return symbols
+}
