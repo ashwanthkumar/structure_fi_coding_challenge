@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/rcrowley/go-metrics"
 	"github.com/recws-org/recws"
 	"github.com/valyala/fastjson"
 )
@@ -75,6 +76,7 @@ func (SM StreamsManager) Open(streamsInLowerCase []string) error {
 					SM.ErrorBroadcast <- err
 				} else {
 					SM.MessageBroadcast <- *streamMessage
+					metrics.GetOrRegisterMeter("consumption-rate", nil).Mark(1)
 				}
 			}
 		}()

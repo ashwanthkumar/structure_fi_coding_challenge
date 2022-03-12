@@ -1,10 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"runtime"
+	"time"
 
 	"github.com/ashwanthkumar/structure_fi_coding_challenge/store"
 	"github.com/gin-gonic/gin"
+	"github.com/rcrowley/go-metrics"
 )
 
 type SymbolsResponse struct {
@@ -53,24 +57,50 @@ func ReturnSymbolInfo(datastore store.Store) func(c *gin.Context) {
 	}
 }
 
-type VersionInfoResponse struct {
-	Version   string `json:"version"`
-	BuildTime string `json:"buildTime"`
+type AppInfoResponse struct {
+	GitSha          string `json:"gitSha"`
+	BuildTime       string `json:"buildTime"`
+	StartTime       string `json:"startTime"`
+	RunningTime     string `json:"runningTime"`
+	MemoryAllocated string `json:"memoryUsage"`
+	MoreInfo        string `json:"moreInfo"`
 }
 
-// Return service version info
-// @Summary      Return service version info
-// @Description  Return service version info
+// Return runtime service version info
+// @Summary      Return runtime service version info
+// @Description  Return runtime service version info
 // @Tags         Ops
 // @Produce      json
-// @Success      200  {object}  main.VersionInfoResponse
-// @Router       /version [get]
-func VersionInfo() func(c *gin.Context) {
+// @Success      200  {object}  main.AppInfoResponse
+// @Router       /z/info [get]
+func AppInfo() func(c *gin.Context) {
 	return func(c *gin.Context) {
-		response := VersionInfoResponse{
-			Version:   AppVersion,
-			BuildTime: BuildTimestamp,
+		var m runtime.MemStats
+		runtime.ReadMemStats(&m)
+
+		rfc2822 := "Mon Jan 02 15:04:05 -0700 2006"
+		runningTime := time.Since(StartTime)
+		response := AppInfoResponse{
+			GitSha:          AppVersion,
+			BuildTime:       BuildTimestamp,
+			StartTime:       StartTime.Format(rfc2822),
+			RunningTime:     runningTime.String(),
+			MemoryAllocated: fmt.Sprintf("%d MiB", m.Alloc/1024/1024),
+			MoreInfo:        "/api/v1/z/metrics",
 		}
 		c.JSON(http.StatusOK, response)
+	}
+}
+
+// Return metrics that are captured
+// @Summary      Return metrics that are captured
+// @Description  Return metrics that are captured
+// @Tags         Ops
+// @Produce      json
+// @Success      200  {object} map[string]interface{}
+// @Router       /z/metrics [get]
+func MetricsInfo() func(c *gin.Context) {
+	return func(c *gin.Context) {
+		c.JSON(http.StatusOK, metrics.DefaultRegistry.GetAll())
 	}
 }

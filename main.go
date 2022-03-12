@@ -13,6 +13,7 @@ import (
 
 	// Ref - https://go.dev/blog/pprof
 	"github.com/gin-contrib/pprof"
+	"github.com/rcrowley/go-metrics"
 
 	"github.com/ashwanthkumar/structure_fi_coding_challenge/binance"
 	docs "github.com/ashwanthkumar/structure_fi_coding_challenge/docs"
@@ -26,6 +27,12 @@ var AppVersion = "0.0.1-dev"
 var BuildTimestamp = time.Now().Format(time.RFC3339)
 
 func main() {
+	metrics.RegisterDebugGCStats(metrics.DefaultRegistry)
+	metrics.RegisterRuntimeMemStats(metrics.DefaultRegistry)
+	go metrics.CaptureDebugGCStats(metrics.DefaultRegistry, 1*time.Minute)
+	go metrics.CaptureRuntimeMemStats(metrics.DefaultRegistry, 1*time.Minute)
+	go metrics.Log(metrics.DefaultRegistry, 30*time.Minute, log.New(os.Stderr, "metrics: ", log.Lmicroseconds))
+
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 	streamsManager := binance.NewStreamsManager()
@@ -51,9 +58,10 @@ func main() {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	v1 := router.Group("/api/v1")
 	{
-		v1.GET("/:symbol", ReturnSymbolInfo(datastore))
+		v1.GET("/z/info", AppInfo())
+		v1.GET("/z/metrics", MetricsInfo())
 		v1.GET("/symbols", ReturnAllSymbols(allSymbols, datastore))
-		v1.GET("/version", VersionInfo())
+		v1.GET("/:symbol", ReturnSymbolInfo(datastore))
 	}
 
 	srv := &http.Server{
