@@ -58,12 +58,13 @@ func ReturnSymbolInfo(datastore store.Store) func(c *gin.Context) {
 }
 
 type AppInfoResponse struct {
-	GitSha          string `json:"gitSha"`
-	BuildTime       string `json:"buildTime"`
-	StartTime       string `json:"startTime"`
-	RunningTime     string `json:"runningTime"`
-	MemoryAllocated string `json:"memoryUsage"`
-	MoreInfo        string `json:"moreInfo"`
+	GitSha              string `json:"gitSha"`
+	BuildTime           string `json:"buildTime"`
+	StartTime           string `json:"startTime"`
+	RunningTime         string `json:"runningTime"`
+	HeapMemoryAllocated string `json:"heapMemoryUsage"`
+	SysMemoryAllocated  string `json:"sysMemoryUsage"`
+	MoreInfo            string `json:"moreInfo"`
 }
 
 // Return runtime service version info
@@ -81,12 +82,13 @@ func AppInfo() func(c *gin.Context) {
 		rfc2822 := "Mon Jan 02 15:04:05 -0700 2006"
 		runningTime := time.Since(StartTime)
 		response := AppInfoResponse{
-			GitSha:          AppVersion,
-			BuildTime:       BuildTimestamp,
-			StartTime:       StartTime.Format(rfc2822),
-			RunningTime:     runningTime.String(),
-			MemoryAllocated: fmt.Sprintf("%d MiB", m.Alloc/1024/1024),
-			MoreInfo:        "/api/v1/z/metrics",
+			GitSha:              AppVersion,
+			BuildTime:           BuildTimestamp,
+			StartTime:           StartTime.Format(rfc2822),
+			RunningTime:         runningTime.String(),
+			HeapMemoryAllocated: fmt.Sprintf("%d MiB", m.Alloc/1024/1024),
+			SysMemoryAllocated:  fmt.Sprintf("%d MiB", m.Sys/1024/1024),
+			MoreInfo:            "/api/v1/z/metrics",
 		}
 		c.JSON(http.StatusOK, response)
 	}
