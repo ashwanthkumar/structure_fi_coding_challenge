@@ -24,7 +24,8 @@ import (
 )
 
 var AppVersion = "0.0.1-dev"
-var BuildTimestamp = time.Now().Format(time.RFC3339)
+var BuildTimestamp = "running locally"
+var StartTime = time.Now()
 
 func main() {
 	metrics.RegisterDebugGCStats(metrics.DefaultRegistry)

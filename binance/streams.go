@@ -33,13 +33,11 @@ type StreamMessage struct {
 var (
 	newline = []byte{'\n'}
 	space   = []byte{' '}
-	// Time allowed to read the next pong message from the peer.
-	pongWait = 5 * time.Minute
 )
 
 func NewStreamsManager() StreamsManager {
 	return StreamsManager{
-		MessageBroadcast: make(chan StreamMessage),
+		MessageBroadcast: make(chan StreamMessage, 500),
 		ErrorBroadcast:   make(chan error),
 	}
 }
@@ -60,6 +58,9 @@ func (SM StreamsManager) Open(streamsInLowerCase []string) error {
 		SM.Connections = append(SM.Connections, ws)
 
 		go func() {
+			// re-using the json parser per go-routine that consumes from the websocket connection
+			var jsonParser fastjson.Parser
+
 			for {
 				_, message, err := ws.ReadMessage()
 				if err != nil {
@@ -71,7 +72,7 @@ func (SM StreamsManager) Open(streamsInLowerCase []string) error {
 					break
 				}
 				message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-				streamMessage, err := parseMessageFromTradeStream(string(message))
+				streamMessage, err := parseMessageFromTradeStream(jsonParser, string(message))
 				if err != nil {
 					SM.ErrorBroadcast <- err
 				} else {
@@ -109,9 +110,8 @@ func (SM StreamsManager) Close() {
 	}
 }
 
-func parseMessageFromTradeStream(message string) (*StreamMessage, error) {
-	var p fastjson.Parser
-	v, err := p.Parse(message)
+func parseMessageFromTradeStream(jsonParser fastjson.Parser, message string) (*StreamMessage, error) {
+	v, err := jsonParser.Parse(message)
 	if err != nil {
 		return nil, err
 	}
