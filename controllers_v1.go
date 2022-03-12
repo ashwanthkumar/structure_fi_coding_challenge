@@ -8,8 +8,9 @@ import (
 )
 
 type SymbolsResponse struct {
-	All    []string `json:"all" example:["NEOBTC"]"`
-	Active []string `json:"active" example:["ETHBTC"]`
+	TotalOccurrences uint64   `json:"totalMessages" example:[15000]`
+	Active           []string `json:"active" example:["ETHBTC"]`
+	All              []string `json:"all" example:["NEOBTC"]"`
 }
 
 // Return all symbols
@@ -22,9 +23,11 @@ type SymbolsResponse struct {
 // @Router       /symbols [get]
 func ReturnAllSymbols(allSymbols []string, datastore store.Store) func(c *gin.Context) {
 	return func(c *gin.Context) {
+		activeSymbols, totalOccurrences := datastore.Symbols()
 		response := SymbolsResponse{
-			All:    allSymbols,
-			Active: datastore.Symbols(),
+			TotalOccurrences: totalOccurrences,
+			Active:           activeSymbols,
+			All:              allSymbols,
 		}
 		c.JSON(http.StatusOK, response)
 	}

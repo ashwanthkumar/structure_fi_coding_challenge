@@ -43,13 +43,15 @@ func (s Store) Get(symbol string) (*Stat, bool) {
 	return stat, present
 }
 
-func (s Store) Symbols() []string {
+func (s Store) Symbols() ([]string, uint64) {
+	totalOccurrences := uint64(0)
 	symbols := make([]string, 0)
 	for _, stat := range s.dictionary.Values {
 		if stat != nil {
 			symbols = append(symbols, stat.Symbol)
+			totalOccurrences = totalOccurrences + stat.Occurrence
 		}
 	}
 
-	return symbols
+	return symbols, totalOccurrences
 }
